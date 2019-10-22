@@ -1,6 +1,6 @@
 # SSD_MOBILNET_TEST_PREDICTION
 
-Al seguent link puoi scaricare il modello per fare dei test o per fare il re-train su tuoi oggetti.
+Al seguente link puoi scaricare il modello per fare dei test o per fare il re-train sui tuoi oggetti.
 
 http://download.tensorflow.org/models/object_detection/ssd_mobilenet_v2_coco_2018_03_29.tar.gz 
 
