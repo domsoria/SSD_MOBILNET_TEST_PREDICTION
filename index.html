@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>  	
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0"> </script>
+</head>
+	<body">
+	  	<div>
+	  		<video autoplay="true" width="640" height="640" id="videoElement"></video>
+		 	<canvas id="canvasOutput"></canvas>
+            <p><span id ="result">Attendi un attimo</span></p>
+		</div>
+		</div>
+
+	</body>
+</html>
+
+  <script>
+  		loadModello();
+  		var model;
+  		var labelmap = ["???","persona","bicicletta","auto","motociclo","aereo","autobus","treno","camion","barca","semaforo","idrante","???","segnale di stop","parchimetro","panchina","uccello","gatto","cane","cavallo","pecora","mucca","elefante","orso","zebra","giraffa","???","zaino","ombrello","???","???","borsetta","cravatta","valigia","frisbee","sci","Snowboard","palla sportiva","aquilone","Mazza da baseball","guanto da baseball","skateboard","tavola da surf","racchetta da tennis","bottiglia","???","bicchiere di vino","tazza","forchetta","coltello","cucchiaio","ciotola","Banana","Mela","Sandwich","arancia","broccoli","carota","hot dog","Pizza","ciambella","torta","sedia","divano","pianta in vaso","letto","???","tavolo da pranzo","???","???","gabinetto","???","tv","il computer portatile","topo","a distanza","tastiera","cellulare","microonde","forno","tostapane","Lavello","frigorifero","???","libro","orologio","vaso","forbici","orsacchiotto di peluche","asciugacapelli","spazzolino"]
+
+
+  		loadModello().then(function(){
+			startVideo()
+  		});
+
+  		async function loadModello(){
+			const MODEL_URL = '/web_model_json/model.json'
+			model = await tf.loadGraphModel(MODEL_URL);
+			return model;
+  		}
+
+  		async function getPrediction()
+  		{
+  							
+ 			var video = document.querySelector('video'),
+		        canvas;
+		    var width = video.offsetWidth,height = video.offsetHeight;
+
+			canvas = canvas || document.createElement('canvas');
+		    canvas.width = width;
+		    canvas.height = height;
+		    context = canvas.getContext('2d');
+		    context.drawImage(video, 0, 0, width, height);
+			let ctx = context;
+			var myData = context.getImageData(0, 0, 640, 640);
+
+
+
+			tensor1=tf.browser.fromPixels(myData).resizeNearestNeighbor([224,224]).toFloat().expandDims()
+			const prediction = await model.executeAsync(tensor1);
+			prediction[1].argMax().print();
+
+		    const boxes = prediction[0].dataSync();
+		   	console.log("box: ")
+		    prediction[0].print();
+
+		    const scores = prediction[1].dataSync();
+			console.log("score: ")
+			prediction[1].print();
+
+
+  			const scores1 = prediction[2].dataSync();
+			console.log("score: ")
+			prediction[2].print();
+
+
+			let index=prediction[3].dataSync()[0];
+			let label = labelmap[index];
+			console.log(label + " " + prediction[0].dataSync()[0])
+			var emotionEl = document.getElementById('result');
+	        emotionEl.innerHTML = label + " " + prediction[0].dataSync()[0];
+
+
+			        
+  		}
+
+
+		function startVideo() {
+		    var video = document.querySelector('video'),canvas;
+		    webcamElement=video;
+			    if (navigator.mediaDevices) {
+			        // access the web cam
+			        navigator.mediaDevices.getUserMedia({ video: true })
+			            // permission granted:
+			            .then(function(stream) {
+			                // video.src = window.URL.createObjectURL(stream);
+					     video.srcObject = stream;
+			                window.setInterval(function() {
+			                   getPrediction(); 
+			                }, 500);
+
+			            })
+			            // permission denied:
+			            .catch(function(error) {
+			                // document.body.textContent = 'Could not access the camera.
+							// Error:
+			                // ' + error.name;
+			            });
+			    }
+		}
+
+
+
+  </script>
+
